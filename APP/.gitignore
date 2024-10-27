@@ -1,0 +1,17 @@
+# Log dosyalarını yoksay
+*.log
+# Derleme dosyalarını yoksay
+Include/
+Lib/
+Scripts/
+share/
+Source/
+# Python derleme dosyalarını yoksay
+*.pyc
+__pycache__/
+
+# Ortam değişkenlerini tutan dosyayı yoksay
+.env
+# Dışında tutulan dosya ve dizinler
+*.bak           # yedek dosyalar
+.idea/          # PyCharm gibi bazı IDE'lerin proje yapılandırma dosyaları
