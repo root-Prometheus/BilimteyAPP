@@ -6,8 +6,10 @@ from kivy.properties import StringProperty
 import json as js
 import random as r
 import pandas as pd
-
-
+from kivy.clock import Clock
+from kivy.properties import NumericProperty
+import os
+import sys
 
 # Kivy dosyası
 Builder.load_string('''
@@ -45,13 +47,29 @@ Builder.load_string('''
                 size: (100, 50)
                 pos_hint: {'center_x': 0.5}
                 on_press: root.manager.current = 'question'
-                on_press: root.get_username()  # Button, get_username metodunu çağırıyor
-
+                on_press: root.get_username()
+                color: 0, 0, 0, 1
             Label:
                 text: 'Başarılar..'
                 size_hint: (None, None)
                 size: (100, 50)
                 pos_hint: {'center_x': 0.5}
+    AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'bottom'
+        Image:
+            source: 'APP/file.png'
+            size_hint: (None, None)
+            size: (100, 100)
+            pos_hint: {'center_x': 0.5}
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'bottom'
+        Image:
+            source: 'APP/kblogo.png'
+            size_hint: (None, None)
+            size: (100, 100)
+            pos_hint: {'center_x': 0.5}
             
 
 <QuestionScreen>:
@@ -72,13 +90,17 @@ Builder.load_string('''
             size_hint: (None, None)
             size: (400, 400)
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-            
             Label:
-                text: root.question_text  # Burada root.question_text kullanıyoruz
+                text: f'Kalan Süre: {root.time_left} saniye'  # Geri sayımı burada gösteriyoruz
                 font_size: 20
                 size_hint_y: None
                 height: 50
-
+            
+            Label:
+                text: root.question_text
+                font_size: 20
+                size_hint_y: None
+                height: 50
             GridLayout:
                 cols: 4
                 Button:
@@ -86,49 +108,136 @@ Builder.load_string('''
                     size_hint: (None, None)
                     size: (100, 100)
                     on_press: root.AnswerA()
+                    on_press: root.getFinalScore()
                 Button:
                     text: root.B
                     size_hint: (None, None)
                     size: (100, 100)
                     on_press: root.AnswerB()
+                    on_press: root.getFinalScore()
                 Button:
                     text: root.C
                     size_hint: (None, None)
                     size: (100, 100)
                     on_press: root.AnswerC()
+                    on_press: root.getFinalScore()
                 Button:
                     text: root.D
                     size_hint: (None, None)
                     size: (100, 100)
                     on_press: root.AnswerD()
-''')
+                    on_press: root.getFinalScore()
+<FailsScreen>:
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: (None, None)
+            size: (300, 200)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
 
+            Label:
+                text:root.Name + ": " + root.Score + " Puan"
+                font_size: 40
+                size_hint_y: None
+                height: 50
+            Label:
+                text:  "Toplamda " +  str(int(int(root.Score) / 5)) + " adet soruyu doğru çözdünüz." 
+                font_size: 40
+                size_hint_y: None
+                height: 50
+            Button:
+                text: 'Menüye Dön'
+                size_hint: (None, None)
+                size: (100, 50)
+                pos_hint: {'center_x': 0.5}
+                on_press: root.manager.current = 'menu'
+                on_press: root.manager.get_screen('question').pushData()
+<WonScreen>:
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: (None, None)
+            size: (300, 200)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            Label:
+                text: 'Tebrikler! Oyunu Kazandınız!'
+            Button:
+                text: 'Menüye Dön'
+                size_hint: (None, None)
+                size: (100, 50)
+                pos_hint: {'center_x': 0.5}
+                on_press: root.manager.current = 'menu'
+                on_press: root.manager.get_screen('question').pushData()
+''')
+class RandomNumberGenerator:
+    def __init__(self):
+        self.previous_number = None
+
+    def get_random_number(self):
+        while True:
+            # 1 ile 100 arasında rastgele bir sayı üret
+            new_number = r.randint(1, 10)
+            if new_number != self.previous_number:
+                self.previous_number = new_number
+                return new_number
+
+class WonScreen(Screen):
+    pass
 class QuestionScreen(Screen):
-    question_text = StringProperty("Loading question...")  # Bu StringProperty'yi tanımladık
+    question_text = StringProperty("Loading question...")
     A = StringProperty("")
     B = StringProperty("")
     C = StringProperty("")
     D = StringProperty("")
     username = StringProperty("")
+    time_left = NumericProperty(10)  # Geri sayım için eklenen özellik
     num = 0
     answer = StringProperty("")
+    Score = 0
     QL = 1
-
+    timer_event = None
     def on_enter(self):
-        self.load_data_from_json()  # Ekran açıldığında soru yükleniyor
+        self.load_data_from_json()
+        self.start_timer()
+    def start_timer(self):
+        self.time_left = 10  # Süreyi başlat
+        self.timer_event = Clock.schedule_interval(self.update_timer, 1)
 
+    def update_timer(self, dt):
+        self.time_left -= 1
+        if self.time_left <= 0:
+            self.time_out()
+
+    def stop_timer(self):
+        if self.timer_event:
+            Clock.unschedule(self.timer_event)
+
+    def time_out(self):
+        print("Süre doldu.")
+        self.stop_timer()
+        self.manager.current = 'fails'  # Süre dolduğunda başarısız ekranına geç
     def load_data_from_json(self):
         try:
-            if self.QL <= 5:
+            if self.QL <= 2:
                 soru_dosya = 'APP/Db/Soru-Easy.json'
-            elif self.QL <= 10:
+            elif self.QL <= 6:
                 soru_dosya = 'APP/Db/Soru-Medium.json'
-            else:
+            elif self.QL <= 10:
                 soru_dosya = 'APP/Db/Soru-Hard.json'
+            else:
+                self.stop_timer()
+                self.manager.current = 'won'
+                return
+                
 
             with open(soru_dosya, encoding='utf-8') as f:
                 sorular = js.load(f)
-            num = r.randint(1, len(sorular))
+            rmg = RandomNumberGenerator()
+            num = rmg.get_random_number()
             self.manager.get_screen('question').num = num
             soru_numarası = f"Soru {num}:"  # Dosyadaki soru sayısına göre random seçiyoruz
             self.question_text = sorular[soru_numarası]["Soru"]
@@ -143,28 +252,44 @@ class QuestionScreen(Screen):
         except Exception as e:
             print("Hata:", e)
             self.question_text = "Soru yüklenemedi."
+    def check_answer(self, selected_option):
+        if selected_option == self.answer:
+            print("Doğru")
+            # TestApp içindeki Score özelliğini güncelliyoruz
+            self.manager.get_screen('question').Score += 5
+            self.load_data_from_json()
+        else:
+            print("Yanlış")
+            self.stop_timer()
+            self.manager.current = 'fails'
+
     def AnswerA(self):
-        if "A" == self.answer:
-            print("Doğru")
-        else:
-            print("Yanlış")
+        self.manager.get_screen('question').Score += 5
+        self.load_data_from_json()
+
     def AnswerB(self):
-        if "B" == self.answer:
-            print("Doğru")
-        else:
-            print("Yanlış")
+        self.check_answer("B")
+
     def AnswerC(self):
-        if "C" == self.answer:
-            print("Doğru")
-        else:
-            print("Yanlış")
+        self.check_answer("C")
+
     def AnswerD(self):
-        if "D" == self.answer:
-            print("Doğru")
-        else:
-            print("Yanlış")
+        self.check_answer("D")
+    def getFinalScore(self):
+        #self.manager.get_screen('fails').Score = str(self.manager.get_screen('question').Score)
+        self.manager.get_screen('fails').Score = str(self.Score)
+        self.manager.get_screen('fails').Name = self.username
+        self.manager.get_screen('fails').int_Score = self.manager.get_screen('question').Score
+        self.manager.get_screen('fails').time = self.time_left
+    def pushData(self):
+        df = pd.DataFrame([[self.username, self.Score , (self.Score / 5) , self.time_left]], columns=["Username", "Score","Level","Time"])
+        df.to_csv('APP/Db/User-Info.csv', mode='a', sep='|', header=not pd.io.common.file_exists('APP/Db/User-Info.csv'), index=False)
+        App.get_running_app().restart()
         
-        
+class FailsScreen(Screen):
+    Score = StringProperty("0") # Bu StringProperty'yi tanımladık bunu kullanmamızın sebebi, bu değeri değiştirdiğimizde ekrandaki değer de değişecek direkt string olarak atasaydık değişmeyecekti
+    Name = StringProperty("")
+    time = NumericProperty(0)
 
 class MainScreen(Screen):
     def get_username(self):
@@ -177,17 +302,19 @@ class MainScreen(Screen):
         #df = pd.DataFrame([[username]], columns=["Username"])
         #df.to_csv('APP/Db/User-Info.csv', mode='a', header=False, index=False)
 
-
-        
-
-
 class TestApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(MainScreen(name='menu'))
         sm.add_widget(QuestionScreen(name='question'))
+        sm.add_widget(FailsScreen(name='fails'))
+        sm.add_widget(WonScreen(name='won'))
         Window.size = (800, 600)
         return sm
+    def restart(self):
+        """Uygulamayı kapatıp yeniden başlat."""
+        os.execl(sys.executable, sys.executable, *sys.argv)
 
 if __name__ == '__main__':
     TestApp().run()
+    exit()

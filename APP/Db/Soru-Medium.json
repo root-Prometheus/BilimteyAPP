@@ -1,0 +1,92 @@
+{
+    "Soru 1:":
+    {
+        "Soru": "Türkiye'nin başkenti neresidir?",
+        "A": "Ankara",
+        "B": "İstanbul",
+        "C": "İzmir",
+        "D": "Bursa",
+        "Cevap": "A"
+    },
+    "Soru 2:" :
+    {
+        "Soru": "Hangi gezegen Güneş Sistemi'ndeki en büyük gezegendir?",
+        "A": "Mars",
+        "B": "Venüs",
+        "C": "Jüpiter",
+        "D": "Saturn",
+        "Cevap": "C"
+    },
+    "Soru 3:" :
+    {
+        "Soru": "Bir kilogram kaç gramdır?",
+        "A": "100",
+        "B": "1000",
+        "C": "10000",
+        "D": "10",
+        "Cevap": "B"
+    },
+    "Soru 4:" :
+    {
+        "Soru": "Hangi renk gökyüzünde en çok bulunur?",
+        "A": "Yeşil",
+        "B": "Kırmızı",
+        "C": "Mavi",
+        "D": "Sarı",
+        "Cevap": "C"
+    },
+    "Soru 5:" :
+    {
+        "Soru": "Dünyanın en büyük okyanusu hangisidir?",
+        "A": "Atlantik Okyanusu",
+        "B": "Hint Okyanusu",
+        "C": "Pasifik Okyanusu",
+        "D": "Arktik Okyanusu",
+        "Cevap": "C"
+    },
+    "Soru 6:" :
+    {
+        "Soru": "İlk yazılı belge hangi uygarlığa aittir?",
+        "A": "Mısır",
+        "B": "Mezopotamya",
+        "C": "Yunan",
+        "D": "Roma",
+        "Cevap": "B"
+    },
+    "Soru 7:" :
+    {
+        "Soru": "Hangi element suyun bileşenidir?",
+        "A": "Karbon",
+        "B": "Oksijen",
+        "C": "Azot",
+        "D": "Hidrojen",
+        "Cevap": "B ve D"
+    },
+    "Soru 8:" :
+    {
+        "Soru": "Hangi gezegen 'Kırmızı Gezegen' olarak bilinir?",
+        "A": "Venüs",
+        "B": "Mars",
+        "C": "Jüpiter",
+        "D": "Uranüs",
+        "Cevap": "B"
+    },
+    "Soru 9:" :
+    {
+        "Soru": "Hangi ülkenin bayrağında ay yıldız sembolü bulunmaz?",
+        "A": "Türkiye",
+        "B": "Pakistan",
+        "C": "Azerbaycan",
+        "D": "Tunus",
+        "Cevap": "B"
+    },
+    "Soru 10:" :
+    {
+        "Soru": "Hangi ülkenin başkenti Paris'tir?",
+        "A": "İtalya",
+        "B": "İspanya",
+        "C": "Fransa",
+        "D": "Almanya",
+        "Cevap": "C"
+    }
+}
