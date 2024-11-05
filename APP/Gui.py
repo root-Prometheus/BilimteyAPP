@@ -91,7 +91,7 @@ Builder.load_string('''
             size: (400, 400)
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
             Label:
-                text: f'Kalan Süre: {root.time_left} saniye'  # Geri sayımı burada gösteriyoruz
+                text: f'Kalan Süre: {root.time_left} saniye---Code:{root.Code}'  # Geri sayımı burada gösteriyoruz
                 font_size: 20
                 size_hint_y: None
                 height: 50
@@ -105,28 +105,54 @@ Builder.load_string('''
                 cols: 4
                 Button:
                     text: root.A
+                    text_size: self.size
+                    halign: 'center'
+                    valign: 'middle'
                     size_hint: (None, None)
                     size: (100, 100)
                     on_press: root.AnswerA()
                     on_press: root.getFinalScore()
                 Button:
                     text: root.B
+                    text_size: self.size
+                    halign: 'center'
+                    valign: 'middle'
                     size_hint: (None, None)
                     size: (100, 100)
                     on_press: root.AnswerB()
                     on_press: root.getFinalScore()
                 Button:
                     text: root.C
+                    text_size: self.size
+                    halign: 'center'
+                    valign: 'middle'
                     size_hint: (None, None)
                     size: (100, 100)
                     on_press: root.AnswerC()
                     on_press: root.getFinalScore()
                 Button:
                     text: root.D
+                    text_size: self.size
+                    halign: 'center'
+                    valign: 'middle'
                     size_hint: (None, None)
                     size: (100, 100)
                     on_press: root.AnswerD()
                     on_press: root.getFinalScore()
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: 50
+                Button:
+                    text: '50-50 Joker'
+                    size_hint: (None, None)
+                    size: (100, 50)
+                    on_press: root.use_50_50_joker()
+                Button:
+                    text: 'Seyirciye Sor'
+                    size_hint: (None, None)
+                    size: (100, 50)
+                    on_press: root.use_ask_audience_joker()
 <FailsScreen>:
     AnchorLayout:
         anchor_x: 'center'
@@ -148,11 +174,11 @@ Builder.load_string('''
                 size_hint_y: None
                 height: 50
             Button:
-                text: 'Menüye Dön'
+                text: 'Çıkış'
                 size_hint: (None, None)
                 size: (100, 50)
                 pos_hint: {'center_x': 0.5}
-                on_press: root.manager.current = 'menu'
+                on_press: app.stop()
                 on_press: root.manager.get_screen('question').pushData()
 <WonScreen>:
     AnchorLayout:
@@ -166,35 +192,52 @@ Builder.load_string('''
             Label:
                 text: 'Tebrikler! Oyunu Kazandınız!'
             Button:
-                text: 'Menüye Dön'
+                text: 'Çıkış'
                 size_hint: (None, None)
                 size: (100, 50)
                 pos_hint: {'center_x': 0.5}
-                on_press: root.manager.current = 'menu'
+                on_press: app.stop()
                 on_press: root.manager.get_screen('question').pushData()
 ''')
 class RandomNumberGenerator:
     def __init__(self):
         self.previous_number = None
 
-    def get_random_number(self):
-        while True:
-            # 1 ile 100 arasında rastgele bir sayı üret
-            new_number = r.randint(1, 10)
-            if new_number != self.previous_number:
-                self.previous_number = new_number
+    def get_random_number(self,num):
+        BooM = {"E":[],"M":[],"H":[]}
+        if num <= 2:
+            new_number = r.randint(1, 24)
+            if new_number in BooM["E"]:
+                return self.get_random_number(num)
+            else:
+                BooM["E"].append(new_number)
+                return new_number
+        elif num <= 6:
+            new_number = r.randint(1, 24)
+            if new_number in BooM["M"]:
+                return self.get_random_number(num)
+            else:
+                BooM["M"].append(new_number)
+                return new_number
+        elif num <= 10:
+            new_number = r.randint(1, 24)
+            if new_number in BooM["H"]:
+                return self.get_random_number(num)
+            else:
+                BooM["H"].append(new_number)
                 return new_number
 
 class WonScreen(Screen):
     pass
 class QuestionScreen(Screen):
+    Code = StringProperty("")
     question_text = StringProperty("Loading question...")
     A = StringProperty("")
     B = StringProperty("")
     C = StringProperty("")
     D = StringProperty("")
     username = StringProperty("")
-    time_left = NumericProperty(10)  # Geri sayım için eklenen özellik
+    time_left = NumericProperty(180)  # Geri sayım için eklenen özellik
     num = 0
     answer = StringProperty("")
     Score = 0
@@ -204,7 +247,7 @@ class QuestionScreen(Screen):
         self.load_data_from_json()
         self.start_timer()
     def start_timer(self):
-        self.time_left = 10  # Süreyi başlat
+        self.time_left = 900  # Süreyi başlat
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)
 
     def update_timer(self, dt):
@@ -224,20 +267,21 @@ class QuestionScreen(Screen):
         try:
             if self.QL <= 2:
                 soru_dosya = 'APP/Db/Soru-Easy.json'
+                self.Code += "E"
             elif self.QL <= 6:
                 soru_dosya = 'APP/Db/Soru-Medium.json'
+                self.Code += "M"
             elif self.QL <= 10:
                 soru_dosya = 'APP/Db/Soru-Hard.json'
+                self.Code += "H"
             else:
                 self.stop_timer()
                 self.manager.current = 'won'
                 return
-                
-
             with open(soru_dosya, encoding='utf-8') as f:
                 sorular = js.load(f)
             rmg = RandomNumberGenerator()
-            num = rmg.get_random_number()
+            num = rmg.get_random_number(self.QL)
             self.manager.get_screen('question').num = num
             soru_numarası = f"Soru {num}:"  # Dosyadaki soru sayısına göre random seçiyoruz
             self.question_text = sorular[soru_numarası]["Soru"]
@@ -246,26 +290,56 @@ class QuestionScreen(Screen):
             self.C = sorular[soru_numarası]["C"]
             self.D = sorular[soru_numarası]["D"]
             answer = sorular[soru_numarası]["Cevap"]
+            self.Code += str(num)
             self.manager.get_screen('question').answer = answer
             self.QL += 1
-
         except Exception as e:
             print("Hata:", e)
-            self.question_text = "Soru yüklenemedi."
+            self.question_text = "Soru yüklenemedi. Tekrar deneniyor..."
+            Clock.schedule_once(lambda dt: self.load_data_from_json(), 1)
+
+    def use_50_50_joker(self):
+        if hasattr(self, 'joker_50_50_used') and self.joker_50_50_used:
+            print("50-50 joker hakkı zaten kullanıldı.")
+            return
+        self.joker_50_50_used = True
+
+        options = ['A', 'B', 'C', 'D']
+        options.remove(self.answer)  # Doğru cevabı kaldır
+        wrong_options = r.sample(options, 2)  # 2 yanlış cevap seç
+
+        # Seçilen yanlış cevapları gizle
+        if 'A' in wrong_options:
+            self.A = ""
+        if 'B' in wrong_options:
+            self.B = ""
+        if 'C' in wrong_options:
+            self.C = ""
+        if 'D' in wrong_options:
+            self.D = ""
+
+    def use_ask_audience_joker(self):
+        if hasattr(self, 'joker_ask_audience_used') and self.joker_ask_audience_used:
+            print("Seyirciye sorma joker hakkı zaten kullanıldı.")
+            return
+        self.joker_ask_audience_used = True
+
+        audience_suggestion = self.answer
+        print(f"Seyirciye sorma joker hakkı kullanıldı. Seyircilerin önerisi: {audience_suggestion}")
     def check_answer(self, selected_option):
         if selected_option == self.answer:
             print("Doğru")
             # TestApp içindeki Score özelliğini güncelliyoruz
             self.manager.get_screen('question').Score += 5
+            self.Code = ""
             self.load_data_from_json()
         else:
             print("Yanlış")
             self.stop_timer()
             self.manager.current = 'fails'
-
+            
     def AnswerA(self):
-        self.manager.get_screen('question').Score += 5
-        self.load_data_from_json()
+        self.check_answer("A")
 
     def AnswerB(self):
         self.check_answer("B")
@@ -282,9 +356,9 @@ class QuestionScreen(Screen):
         self.manager.get_screen('fails').int_Score = self.manager.get_screen('question').Score
         self.manager.get_screen('fails').time = self.time_left
     def pushData(self):
-        df = pd.DataFrame([[self.username, self.Score , (self.Score / 5) , self.time_left]], columns=["Username", "Score","Level","Time"])
+        df = pd.DataFrame([[self.username, self.Score , (self.Score / 5),self.time_left,lambda row: (row["Score"] * row["Time"] + row["Time"]) if (row["Score"] / 5) == 10 else row["Time"]]], columns=["Username", "Score","Level","Time","Final Score"])
+        df["Final Score"] = df.apply(lambda row: (row["Score"] * row["Time"] + row["Time"]) if (row["Score"] / 5) == 10 else row["Time"], axis=1)
         df.to_csv('APP/Db/User-Info.csv', mode='a', sep='|', header=not pd.io.common.file_exists('APP/Db/User-Info.csv'), index=False)
-        App.get_running_app().restart()
         
 class FailsScreen(Screen):
     Score = StringProperty("0") # Bu StringProperty'yi tanımladık bunu kullanmamızın sebebi, bu değeri değiştirdiğimizde ekrandaki değer de değişecek direkt string olarak atasaydık değişmeyecekti
@@ -311,10 +385,7 @@ class TestApp(App):
         sm.add_widget(WonScreen(name='won'))
         Window.size = (800, 600)
         return sm
-    def restart(self):
-        """Uygulamayı kapatıp yeniden başlat."""
-        os.execl(sys.executable, sys.executable, *sys.argv)
+
 
 if __name__ == '__main__':
     TestApp().run()
-    exit()
